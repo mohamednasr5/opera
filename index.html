@@ -315,7 +315,19 @@
         .hidden { display: none !important; }
         .section-title { font-size: 1.2rem; margin-bottom: 1.2rem; color: var(--secondary); position: relative; padding-right: 15px; border: none; }
         .section-title::before { content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 6px; height: 25px; background: var(--warning); border-radius: 10px; }
-        .developer-footer { margin-top: 3rem; text-align: center; padding: 2rem; border-top: 1px solid #eee; background: white; border-radius: 20px 20px 0 0; position: relative; z-index: 10; }
+        
+        /* --- FOOTER STYLING (UPDATED) --- */
+        .developer-footer { 
+            margin-top: auto;
+            text-align: center; padding: 1.5rem; 
+            border-top: 1px solid rgba(255,255,255,0.5);
+            /* Solid Glass Effect */
+            background: rgba(255, 255, 255, 0.98) !important; 
+            backdrop-filter: blur(15px);
+            border-radius: 20px 20px 0 0; 
+            position: relative; z-index: 50;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+        }
         .developer-footer a { color: var(--secondary); text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; padding: 8px 15px; background: #f0f2f5; border-radius: 20px; transition: 0.3s; }
         .developer-footer a:hover { background: var(--accent); color: white; }
         .heart-beat { display: inline-block; animation: heartbeat 1.5s infinite; color: var(--danger); }
@@ -329,7 +341,7 @@
             background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
         }
 
-        /* الغيوم المتحركة */
+        /* 1. الغيوم */
         .cloud {
             position: absolute; background: #fff; border-radius: 100px;
             opacity: 0.8; animation: floatCloud linear infinite;
@@ -339,21 +351,37 @@
         .cloud-1 { width: 100px; height: 40px; top: 10%; left: -120px; animation-duration: 25s; }
         .cloud-1::after { width: 40px; height: 40px; top: -20px; left: 15px; }
         .cloud-1::before { width: 50px; height: 50px; top: -30px; left: 35px; }
-
         .cloud-2 { width: 160px; height: 60px; top: 25%; left: -180px; animation-duration: 35s; animation-delay: 5s; transform: scale(0.8); opacity: 0.6; }
         .cloud-2::after { width: 60px; height: 60px; top: -30px; left: 25px; }
         .cloud-2::before { width: 70px; height: 70px; top: -45px; left: 55px; }
-
         @keyframes floatCloud { 0% { left: -200px; } 100% { left: 120%; } }
 
-        /* العجلة الدوارة */
+        /* 2. المنطاد */
+        .balloon {
+            position: absolute; width: 60px; height: 80px;
+            top: 15%; right: -100px;
+            animation: floatBalloon 40s linear infinite;
+            z-index: 0;
+        }
+        .balloon-top { width: 60px; height: 60px; background: #ff7675; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; position: relative; }
+        .balloon-top::before { content: ''; position: absolute; width: 20px; height: 60px; background: rgba(255,255,255,0.2); left: 20px; border-radius: 50%; }
+        .balloon-basket { width: 20px; height: 15px; background: #d63031; margin: 5px auto 0; border-radius: 3px; position: relative; }
+        .balloon-basket::before, .balloon-basket::after { content: ''; position: absolute; width: 1px; height: 10px; background: #636e72; top: -10px; }
+        .balloon-basket::before { left: 0; } .balloon-basket::after { right: 0; }
+        @keyframes floatBalloon { 0% { right: -100px; transform: translateY(0); } 50% { transform: translateY(-20px); } 100% { right: 110%; transform: translateY(0); } }
+
+        /* 3. قطار الموت */
+        .coaster-container { position: absolute; bottom: 80px; left: -50px; width: 100%; height: 200px; z-index: 0; opacity: 0.7; }
+        @keyframes coasterMove { 0% { offset-distance: 0%; } 100% { offset-distance: 100%; } }
+
+        /* 4. العجلة الدوارة */
         .ferris-wheel-container {
-            position: absolute; bottom: -50px; left: 50%; 
-            transform: translateX(-50%) scale(0.8);
+            position: absolute; bottom: 50px; left: 70%; 
+            transform: translateX(-50%) scale(0.7);
             width: 300px; height: 300px;
             z-index: 1;
         }
-        @media (min-width: 768px) { .ferris-wheel-container { bottom: 20px; transform: translateX(-50%) scale(1); } }
+        @media (min-width: 768px) { .ferris-wheel-container { bottom: 80px; left: 50%; transform: translateX(-50%) scale(0.9); } }
 
         .wheel {
             width: 300px; height: 300px; border: 4px solid #bdc3c7; border-radius: 50%;
@@ -365,37 +393,30 @@
         .spoke-x { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #bdc3c7; transform: rotate(45deg); }
         .spoke-y { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #bdc3c7; transform: rotate(-45deg); }
 
-        .cabin {
-            width: 40px; height: 50px; position: absolute;
-            transform-origin: top center;
-            animation: cabinRotate 10s linear infinite reverse;
-        }
-        .cabin-box {
-            width: 100%; height: 100%; border-radius: 10px 10px 5px 5px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 2px 2px 5px rgba(0,0,0,0.2);
-            position: relative;
-        }
+        .cabin { width: 40px; height: 50px; position: absolute; transform-origin: top center; animation: cabinRotate 10s linear infinite reverse; }
+        .cabin-box { width: 100%; height: 100%; border-radius: 10px 10px 5px 5px; box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 2px 2px 5px rgba(0,0,0,0.2); position: relative; }
         .cabin-box::before { content: ''; position: absolute; top: -10px; left: 50%; width: 4px; height: 10px; background: #7f8c8d; transform: translateX(-50%); }
-
         .cabin:nth-child(1) { top: -25px; left: 130px; } .cabin:nth-child(1) .cabin-box { background: #FF6B6B; }
         .cabin:nth-child(2) { top: 35px; right: 35px; } .cabin:nth-child(2) .cabin-box { background: #4ECDC4; }
         .cabin:nth-child(3) { bottom: 35px; right: 35px; } .cabin:nth-child(3) .cabin-box { background: #FFE66D; }
         .cabin:nth-child(4) { bottom: -25px; left: 130px; } .cabin:nth-child(4) .cabin-box { background: #FF9F43; }
         .cabin:nth-child(5) { bottom: 35px; left: 35px; } .cabin:nth-child(5) .cabin-box { background: #54A0FF; }
         .cabin:nth-child(6) { top: 35px; left: 35px; } .cabin:nth-child(6) .cabin-box { background: #5F27CD; color:white; }
-
-        .stand {
-            position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0;
-            border-left: 100px solid transparent;
-            border-right: 100px solid transparent;
-            border-bottom: 160px solid #95a5a6;
-            z-index: -1;
-        }
+        
+        .stand { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 100px solid transparent; border-right: 100px solid transparent; border-bottom: 160px solid #95a5a6; z-index: -1; }
         .stand::after { content: ''; position: absolute; top: 160px; left: -120px; width: 240px; height: 20px; background: #7f8c8d; border-radius: 10px; }
 
         @keyframes wheelRotate { 100% { transform: rotate(360deg); } }
         @keyframes cabinRotate { 100% { transform: rotate(-360deg); } }
+
+        /* 5. الأرضية (Hill) */
+        .ground-hill {
+            position: absolute; bottom: -50px; left: 0; width: 100%; height: 120px;
+            background: #55efc4; border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            z-index: 1; box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+        }
+
+        .parent-view-container { display: flex; flex-direction: column; min-height: 85vh; }
 
         /* استجابة للهواتف الصغيرة */
         @media (max-width: 480px) {
@@ -527,80 +548,96 @@
             </div>
         </div>
 
-        <div id="parent-view" class="hidden" style="position: relative; min-height: 80vh;">
+        <div id="parent-view" class="hidden">
             
-            <div class="scene-container">
-                <div class="cloud cloud-1"></div>
-                <div class="cloud cloud-2"></div>
-                
-                <div class="ferris-wheel-container">
-                    <div class="wheel">
-                        <div class="spoke-x"></div>
-                        <div class="spoke-y"></div>
-                        
-                        <div class="cabin"><div class="cabin-box"></div></div>
-                        <div class="cabin"><div class="cabin-box"></div></div>
-                        <div class="cabin"><div class="cabin-box"></div></div>
-                        <div class="cabin"><div class="cabin-box"></div></div>
-                        <div class="cabin"><div class="cabin-box"></div></div>
-                        <div class="cabin"><div class="cabin-box"></div></div>
+            <div class="parent-view-container">
+                <div class="scene-container">
+                    <div class="cloud cloud-1"></div>
+                    <div class="cloud cloud-2"></div>
+                    <div class="balloon">
+                        <div class="balloon-top"></div>
+                        <div class="balloon-basket"></div>
                     </div>
-                    <div class="stand"></div>
-                </div>
-            </div>
-
-            <div class="parent-view-card">
-                <div class="status-badge-in" id="p-status-badge">متواجد حالياً</div>
-                
-                <h2 id="p-child-name" style="font-size:2rem; margin:15px 0 5px; color:var(--secondary);">اسم الطفل</h2>
-                <p id="p-child-snack" style="color: #888; font-size:1.1rem; margin-bottom:15px;">الوجبة المختارة</p>
-                
-                <div id="p-child-id" class="child-number-display">#0000</div>
-                
-                <div class="parent-timer-circle">
-                    <div class="timer-text-big" id="live-timer">00:00:00</div>
-                </div>
-
-                <p style="color:#666; margin-top:20px;">وقت الدخول: <span id="entry-time-display" style="font-weight:bold;"></span></p>
-                <h3 style="color:var(--secondary); font-size:1.5rem; margin:20px 0;">
-                    التكلفة الحالية: <span id="live-cost">0</span> ج.م
-                </h3>
-
-                <div class="chat-container">
-                    <div id="parent-chat-messages" class="chat-messages">
-                        <div style="text-align:center; color:#999; font-size:0.8rem;">يمكنك إرسال رسالة للإدارة</div>
+                    <div class="coaster-container">
+                        <svg width="100%" height="200" style="position:absolute; bottom:0;">
+                            <path id="coasterPath" d="M-100,200 Q300,0 600,200 T1500,200" fill="transparent" stroke="rgba(0,0,0,0.1)" stroke-width="2" />
+                            <circle r="8" fill="#e84393">
+                                <animateMotion dur="10s" repeatCount="indefinite" rotate="auto">
+                                    <mpath href="#coasterPath"/>
+                                </animateMotion>
+                            </circle>
+                            <circle r="8" fill="#0984e3">
+                                <animateMotion dur="10s" begin="0.5s" repeatCount="indefinite" rotate="auto">
+                                    <mpath href="#coasterPath"/>
+                                </animateMotion>
+                            </circle>
+                        </svg>
                     </div>
-                    <div class="chat-input-area">
-                        <input type="text" id="parent-message-input" class="form-control" placeholder="اكتب رسالة للإدارة...">
-                        <button class="btn btn-primary" onclick="sendParentMessage()" style="border-radius: 8px; width: 50px; position:relative;">
-                            ➤
-                            <span id="parent-msg-badge" class="hidden notification-badge" style="top:-8px; right:-8px;">0</span>
-                        </button>
+                    <div class="ferris-wheel-container">
+                        <div class="wheel">
+                            <div class="spoke-x"></div>
+                            <div class="spoke-y"></div>
+                            <div class="cabin"><div class="cabin-box"></div></div>
+                            <div class="cabin"><div class="cabin-box"></div></div>
+                            <div class="cabin"><div class="cabin-box"></div></div>
+                            <div class="cabin"><div class="cabin-box"></div></div>
+                            <div class="cabin"><div class="cabin-box"></div></div>
+                            <div class="cabin"><div class="cabin-box"></div></div>
+                        </div>
+                        <div class="stand"></div>
+                    </div>
+                    <div class="ground-hill"></div>
+                </div>
+
+                <div style="padding: 1rem; position: relative; z-index: 10; flex-grow: 1;">
+                    <div class="parent-view-card">
+                        <div class="status-badge-in" id="p-status-badge">متواجد حالياً</div>
+                        <h2 id="p-child-name" style="font-size:2rem; margin:15px 0 5px; color:var(--secondary);">اسم الطفل</h2>
+                        <p id="p-child-snack" style="color: #888; font-size:1.1rem; margin-bottom:15px;">الوجبة المختارة</p>
+                        <div id="p-child-id" class="child-number-display">#0000</div>
+                        <div class="parent-timer-circle">
+                            <div class="timer-text-big" id="live-timer">00:00:00</div>
+                        </div>
+                        <p style="color:#666; margin-top:20px;">وقت الدخول: <span id="entry-time-display" style="font-weight:bold;"></span></p>
+                        <h3 style="color:var(--secondary); font-size:1.5rem; margin:20px 0;">
+                            التكلفة الحالية: <span id="live-cost">0</span> ج.م
+                        </h3>
+                        <div class="chat-container">
+                            <div id="parent-chat-messages" class="chat-messages">
+                                <div style="text-align:center; color:#999; font-size:0.8rem;">يمكنك إرسال رسالة للإدارة</div>
+                            </div>
+                            <div class="chat-input-area">
+                                <input type="text" id="parent-message-input" class="form-control" placeholder="اكتب رسالة للإدارة...">
+                                <button class="btn btn-primary" onclick="sendParentMessage()" style="border-radius: 8px; width: 50px; position:relative;">
+                                    ➤
+                                    <span id="parent-msg-badge" class="hidden notification-badge" style="top:-8px; right:-8px;">0</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="session-ended-card" class="parent-view-card hidden" style="background:#fff; border:2px solid var(--danger);">
+                        <h2 style="color:var(--danger); margin-bottom:20px;">انتهت الجلسة</h2>
+                        <p style="font-size:1.2rem; color:#666;">غادر الطفل منطقة اللعب.</p>
+                        <h3 style="margin: 20px 0; font-size:2.5rem; color:var(--secondary);">
+                            المبلغ النهائي: <span id="final-cost" style="color:var(--primary);">0</span> ج.م
+                        </h3>
+                        <p style="font-size:1.2rem; font-weight:bold;">شكراً لزيارتكم! 🎈</p>
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #ccc;">
+                            <h4 style="color: var(--secondary); margin-bottom:5px; font-weight: normal;">في كافيه ومطعم أوبرا عاشور</h4>
+                            <p style="color: var(--primary); font-size: 1.1rem; font-style: italic; font-weight: bold;">..من هنا تبدأ الحكاية</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div id="session-ended-card" class="parent-view-card hidden" style="background:#fff; border:2px solid var(--danger); position: relative; z-index: 10;">
-                <h2 style="color:var(--danger); margin-bottom:20px;">انتهت الجلسة</h2>
-                <p style="font-size:1.2rem; color:#666;">غادر الطفل منطقة اللعب.</p>
-                <h3 style="margin: 20px 0; font-size:2.5rem; color:var(--secondary);">
-                    المبلغ النهائي: <span id="final-cost" style="color:var(--primary);">0</span> ج.م
-                </h3>
-                <p style="font-size:1.2rem; font-weight:bold;">شكراً لزيارتكم! 🎈</p>
-                
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #ccc;">
-                    <h4 style="color: var(--secondary); margin-bottom:5px; font-weight: normal;">في كافيه ومطعم أوبرا عاشور</h4>
-                    <p style="color: var(--primary); font-size: 1.1rem; font-style: italic; font-weight: bold;">..من هنا تبدأ الحكاية</p>
-                </div>
-            </div>
 
-            <div class="developer-footer" style="background:transparent;">
-                <p>برمجة وتطوير بكل حب <span class="heart-beat">❤️</span></p>
-                <p>المهندس محمد حماد</p>
-                <a href="tel:01279934735" class="phone-link"><i class="fas fa-phone"></i> 01279934735</a>
-                <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank">
-                    <i class="fab fa-facebook-f"></i> فيسبوك
-                </a>
+                <div class="developer-footer">
+                    <p>برمجة وتطوير بكل حب <span class="heart-beat">❤️</span></p>
+                    <p>المهندس محمد حماد</p>
+                    <a href="tel:01279934735" class="phone-link"><i class="fas fa-phone"></i> 01279934735</a>
+                    <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank">
+                        <i class="fab fa-facebook-f"></i> فيسبوك
+                    </a>
+                </div>
             </div>
         </div>
     </main>
