@@ -101,34 +101,31 @@
         .controls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; width: 100%; margin-top: 10px; }
         @media (min-width: 600px) { .controls { width: auto; margin-top: 0; } }
 
-        /* --- FINANCIAL REPORT STYLES (IMPROVED) --- */
+        /* --- FINANCIAL REPORT STYLES --- */
         .financial-container { background: var(--fin-bg); padding: 1rem; border-radius: 15px; min-height: 80vh; }
         .day-group { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        
-        .day-header { 
-            background: var(--dark); color: white; padding: 10px 15px; border-radius: 8px; 
-            margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; 
-            font-size: 1.1rem; font-weight: bold; 
-        }
-        
-        .record-row { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 10px 0; border-bottom: 1px solid #f0f0f0; 
-            font-size: 1rem; 
-        }
+        .day-header { background: var(--dark); color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; font-weight: bold; }
+        .record-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 1rem; }
         .record-row:last-child { border-bottom: none; }
-        
         .record-info { display: flex; flex-direction: column; }
         .record-name { font-weight: bold; color: var(--dark); }
         .record-time { font-size: 0.85rem; color: #888; }
         .record-cost { font-weight: bold; color: var(--primary); font-size: 1.1rem; }
+        .day-total { background: #e8f8f5; color: #006266; padding: 12px; border-radius: 8px; text-align: right; font-weight: bold; font-size: 1.2rem; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
 
-        .day-total { 
-            background: #e8f8f5; color: #006266; padding: 12px; border-radius: 8px; 
-            text-align: right; font-weight: bold; font-size: 1.2rem; margin-top: 15px; 
-            display: flex; justify-content: space-between; align-items: center;
+        /* --- PARENT VIEW STYLES (OPTIMIZED) --- */
+        .parent-view-card {
+            text-align: center; background: white; border-radius: 20px; padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid #eee;
+            margin-top: 1rem;
         }
-
+        .parent-timer-circle {
+            width: 200px; height: 200px; background: #fff0f0; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            margin: 20px auto; border: 5px solid var(--primary);
+        }
+        .timer-text-big { font-size: 3rem; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
+        
         /* Badges */
         .status-badge-in { background: var(--success); color: #005f33; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; display:inline-block; }
         .status-badge-paused { background: var(--warning); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; display:inline-block; }
@@ -152,6 +149,7 @@
         .hidden { display: none !important; }
         .timer-display { font-variant-numeric: tabular-nums; font-weight: bold; color: var(--dark); }
         .timer-paused { color: var(--warning); }
+        .test-link { font-size: 0.8rem; color: var(--secondary); text-decoration: underline; cursor: pointer; margin-top: 10px; display: block;}
         
     </style>
 </head>
@@ -160,7 +158,7 @@
     <!-- LOGIN SCREEN -->
     <div id="login-screen">
         <div class="login-card">
-            <img src="https://raw.githubusercontent.com/mohamednasr5/opera/main/01.png" alt="Logo" style="width:80px; margin-bottom:15px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" alt="Logo" style="width:80px; margin-bottom:15px;">
             <h2>أوبرا عاشور للأطفال</h2>
             <p style="color:#666; margin-bottom:20px;">يرجى إدخال كلمة المرور للدخول</p>
             <input type="password" id="login-pass" class="login-input" placeholder="****" onkeypress="handleEnter(event)">
@@ -172,7 +170,8 @@
     <header>
         <div class="header-top">
             <span>📅 <span id="header-datetime">...</span></span>
-            <div style="display:flex; gap:10px;">
+            <!-- Admin Only Buttons -->
+            <div id="admin-controls" style="display:flex; gap:10px;">
                 <button id="nav-stats-btn" class="btn-stats hidden" onclick="openFinanceModal()">
                     <i class="fas fa-chart-pie"></i> ملخص
                 </button>
@@ -222,7 +221,11 @@
                         <h3>✅ تم التسجيل!</h3>
                         <p id="qr-parent-name" style="font-weight:bold;"></p>
                         <div id="qr-code" style="display:flex; justify-content:center; margin: 10px 0;"></div>
-                        <div style="display:grid; gap:5px;">
+                        
+                        <!-- TEST LINK ADDED HERE -->
+                        <a id="test-link-btn" class="test-link" target="_blank">تجربة صفحة الوالد (للاختبار)</a>
+
+                        <div style="display:grid; gap:5px; margin-top:10px;">
                             <button class="btn btn-primary" onclick="copyLink()">📋 نسخ الرابط</button>
                             <button class="btn btn-whatsapp" id="wa-btn-new">📱 إرسال واتساب</button>
                             <button class="btn btn-outline" onclick="closeQR()">إغلاق</button>
@@ -248,38 +251,48 @@
         <!-- FINANCIAL VIEW (Detailed Report) -->
         <div id="financial-view" class="hidden financial-container">
             <div class="grand-total-box">
-                <h2>الإجمالي العام لكل الأيام</h2>
+                <h2>الإجمالي العام</h2>
                 <div class="big-number" id="grand-total-display">0 ج.م</div>
             </div>
-            <div id="financial-logs">
-                <!-- Loaded dynamically -->
-            </div>
+            <div id="financial-logs"></div>
         </div>
 
-        <!-- PARENT VIEW -->
+        <!-- PARENT VIEW (Dedicated Page Style) -->
         <div id="parent-view" class="hidden">
-            <div class="card">
-                <div class="status-badge-in" id="p-status-badge">متواجد</div>
-                <h2 id="p-child-name" style="margin: 10px 0;">اسم الطفل</h2>
-                <p id="p-child-snack" style="color: #666;">الوجبة</p>
+            <div class="parent-view-card">
+                <div class="status-badge-in" id="p-status-badge" style="font-size:1rem; padding:5px 15px; margin-bottom:10px;">متواجد حالياً</div>
                 
-                <div style="font-size:3rem; font-weight:800; color:var(--primary); margin:20px 0;" id="live-timer">00:00:00</div>
-                <p style="color:#888;">الساعة: <span id="entry-time-display"></span></p>
-                <p style="color:var(--primary); font-weight:bold;">التكلفة التقديرية: <span id="live-cost">0</span> ج.م</p>
+                <h2 id="p-child-name" style="font-size:2rem; margin-bottom:5px; color:var(--dark);">اسم الطفل</h2>
+                <p id="p-child-snack" style="color: #888; font-size:1.2rem; margin-bottom:30px;">الوجبة المختارة</p>
+                
+                <div class="parent-timer-circle">
+                    <div class="timer-text-big" id="live-timer">00:00:00</div>
+                </div>
 
-                <div style="margin-top:20px; border:1px solid #eee; border-radius:10px; overflow:hidden;">
-                    <div id="parent-chat-messages" style="height:150px; overflow-y:auto; padding:10px; background:#f9f9f9;"></div>
+                <p style="color:#666; margin-top:20px;">وقت الدخول: <span id="entry-time-display" style="font-weight:bold;"></span></p>
+                <h3 style="color:var(--primary); font-size:1.8rem; margin:20px 0;">
+                    التكلفة التقديرية: <span id="live-cost">0</span> ج.م
+                </h3>
+
+                <!-- Chat Box -->
+                <div style="margin-top:30px; border:1px solid #eee; border-radius:15px; overflow:hidden; box-shadow:0 5px 15px rgba(0,0,0,0.05);">
+                    <div id="parent-chat-messages" style="height:150px; overflow-y:auto; padding:15px; background:#fafafa; text-align:right;">
+                        <div style="color:#999; font-size:0.8rem; text-align:center;">يمكنك إرسال رسالة للإدارة</div>
+                    </div>
                     <div style="display:flex; border-top:1px solid #eee;">
                         <input type="text" id="parent-message-input" class="form-control" style="border:none; border-radius:0;" placeholder="رسالة للإدارة...">
-                        <button class="btn btn-primary" onclick="sendParentMessage()" style="border-radius:0; width:50px;">➤</button>
+                        <button class="btn btn-primary" onclick="sendParentMessage()" style="border-radius:0; width:60px; font-size:1.2rem;">➤</button>
                     </div>
                 </div>
             </div>
             
-            <div id="session-ended-card" class="card hidden" style="background:#f0f0f0;">
-                <h2 style="color:var(--danger);">انتهت الجلسة</h2>
-                <p>المبلغ النهائي: <strong id="final-cost" style="color:var(--primary); font-size:1.5rem;"></strong> ج.م</p>
-                <p>شكراً لزيارتكم! 🎈</p>
+            <div id="session-ended-card" class="parent-view-card hidden" style="background:#f0f0f0; border:2px solid var(--danger);">
+                <h2 style="color:var(--danger); margin-bottom:20px;">انتهت الجلسة</h2>
+                <p style="font-size:1.2rem; color:#666;">غادر الطفل منطقة اللعب.</p>
+                <h3 style="margin: 20px 0; font-size:2.5rem; color:var(--dark);">
+                    المبلغ النهائي: <span id="final-cost" style="color:var(--primary);">0</span> ج.م
+                </h3>
+                <p style="font-size:1.2rem; font-weight:bold;">شكراً لزيارتكم! 🎈</p>
             </div>
         </div>
     </main>
@@ -366,13 +379,13 @@
                 loginScreen.classList.add('hidden');
                 document.getElementById('nav-stats-btn').classList.remove('hidden');
                 document.getElementById('nav-logout-btn').classList.remove('hidden');
-                document.getElementById('nav-stats-btn').onclick = openFinanceModal;
+                document.getElementById('admin-controls').style.display = 'flex'; // Show header buttons
                 initAdminView();
             } else if (pass === '521988') {
-                // Financial View Triggered
                 loginScreen.classList.add('hidden');
-                document.getElementById('nav-stats-btn').classList.add('hidden'); // Hide summary button in detailed view
+                document.getElementById('nav-stats-btn').classList.add('hidden'); 
                 document.getElementById('nav-logout-btn').classList.remove('hidden');
+                document.getElementById('admin-controls').style.display = 'flex';
                 initFinancialView();
             } else {
                 showToast("كلمة المرور خاطئة! ❌");
@@ -384,9 +397,17 @@
             location.reload();
         };
 
+        // Check URL Parameters FIRST (Before Login check)
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('mode') === 'parent' && urlParams.get('id')) {
-            initParentView(urlParams.get('id'));
+        const viewMode = urlParams.get('mode');
+        const childIdParam = urlParams.get('id');
+
+        if (viewMode === 'parent' && childIdParam) {
+            // PARENT MODE: Skip Login, Hide Header Buttons
+            loginScreen.classList.add('hidden');
+            document.getElementById('admin-controls').style.display = 'none'; // Hide Logout/Stats
+            document.getElementById('header-subtitle').innerText = "بوابة متابعة أولياء الأمور";
+            initParentView(childIdParam);
         }
 
         // --- HEADER CLOCK ---
@@ -410,6 +431,7 @@
 
                 Object.keys(data).forEach(key => {
                     const child = data[key];
+                    // Use correct GitHub Pages URL structure
                     const link = `${window.location.origin}${window.location.pathname}?mode=parent&id=${key}`;
                     let billableTime = 0;
 
@@ -498,6 +520,10 @@
                     document.getElementById('qr-parent-name').innerText = name;
                     qrContainer.innerHTML = '';
                     new QRCode(qrContainer, { text: link, width:128 });
+                    
+                    // Update Test Link
+                    document.getElementById('test-link-btn').href = link;
+
                     document.getElementById('wa-btn-new').onclick = () => sendToWhatsApp(phone, encodeURIComponent(link));
                 });
             };
@@ -519,8 +545,7 @@
                     return;
                 }
 
-                // Group by Date
-                const records = {}; // Structure: { "YYYY-MM-DD": { display: "Day Name...", total: 0, items: [] } }
+                const records = {}; 
                 let grandTotal = 0;
 
                 Object.keys(data).forEach(key => {
@@ -528,7 +553,7 @@
                     if (child.status === 'out' && child.exitTime) {
                         const cost = parseFloat(child.totalCost);
                         const dateObj = new Date(child.exitTime);
-                        const dateKey = `${dateObj.getFullYear()}-${dateObj.getMonth()+1}-${dateObj.getDate()}`; // Sortable key
+                        const dateKey = `${dateObj.getFullYear()}-${dateObj.getMonth()+1}-${dateObj.getDate()}`; 
                         const dateDisplay = dateObj.toLocaleDateString('ar-EG', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
                         const exitTime = dateObj.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
 
@@ -554,7 +579,6 @@
                     return;
                 }
 
-                // Sort Dates Descending (Newest first)
                 Object.keys(records).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
                     const dayData = records[date];
                     const dayHtml = document.createElement('div');
@@ -651,11 +675,15 @@
         };
         window.closeFinanceModal = () => document.getElementById('finance-modal').style.display = 'none';
 
-        // --- PARENT LOGIC ---
+        // --- PARENT LOGIC (Optimized) ---
         function initParentView(id) {
             adminView.classList.add('hidden');
             financialView.classList.add('hidden');
             parentView.classList.remove('hidden');
+            
+            // Clean up any previous interval
+            if(parentInterval) clearInterval(parentInterval);
+
             onValue(ref(db, `children/${id}`), s => {
                 const c = s.val();
                 if(!c) return;
@@ -667,18 +695,37 @@
                 const timer = document.getElementById('live-timer');
 
                 if(c.status === 'in') {
-                    badge.className = 'status-badge-in'; badge.innerText = 'متواجد';
-                    document.querySelector('.card').style.display='block';
+                    badge.className = 'status-badge-in'; badge.innerText = 'متواجد حالياً';
+                    badge.style.background = 'var(--success)'; badge.style.color = 'white';
+                    
+                    document.querySelector('.parent-view-card').style.display='block';
                     document.getElementById('session-ended-card').classList.add('hidden');
+                    
+                    // Reset Interval for new data
                     if(parentInterval) clearInterval(parentInterval);
-                    parentInterval = setInterval(() => {
+                    
+                    const updateTimer = () => {
                         const t = Date.now() - c.entryTime - (c.totalPausedTime||0);
                         timer.innerText = formatDuration(t);
                         document.getElementById('live-cost').innerText = ((t/3600000)*50).toFixed(1);
-                    }, 1000);
+                    };
+                    
+                    updateTimer(); // Immediate update
+                    parentInterval = setInterval(updateTimer, 1000);
+                    
+                    // Load Messages (Simple logic)
+                    // Note: Need listener for messages if we want real-time chat, 
+                    // but for simplicity we assume static or re-triggered on data change
+                } else if (c.status === 'paused') {
+                    clearInterval(parentInterval);
+                    badge.className = 'status-badge-paused'; badge.innerText = 'خروج مؤقت';
+                    badge.style.background = 'var(--warning)'; badge.style.color = 'white';
+                    const pausedT = c.pauseStartTime - c.entryTime - (c.totalPausedTime||0);
+                    timer.innerText = formatDuration(pausedT);
+                    timer.style.color = 'var(--warning)';
                 } else if (c.status === 'out') {
                     clearInterval(parentInterval);
-                    document.querySelector('.card').style.display='none';
+                    document.querySelector('.parent-view-card').style.display='none';
                     document.getElementById('session-ended-card').classList.remove('hidden');
                     document.getElementById('final-cost').innerText = c.totalCost;
                 }
@@ -690,6 +737,12 @@
             if(!t) return;
             push(ref(db, `children/${childIdParam}/messages`), { text:t, sender:'parent', timestamp:Date.now() });
             document.getElementById('parent-message-input').value = '';
+            // Visual feedback in chat box
+            const msgDiv = document.createElement('div');
+            msgDiv.style.cssText = "background:#ffe66d; padding:8px; border-radius:8px; margin:5px 0; width:80%; margin-right:auto; text-align:left;";
+            msgDiv.innerText = t;
+            document.getElementById('parent-chat-messages').appendChild(msgDiv);
+            document.getElementById('parent-chat-messages').scrollTop = document.getElementById('parent-chat-messages').scrollHeight;
         };
 
         // Utils
@@ -699,9 +752,9 @@
         }
         window.showToast = (m) => {
             const t = document.createElement('div'); 
-            t.style.cssText = 'background:var(--dark); color:white; padding:10px 20px; border-radius:8px; margin-top:10px;';
+            t.style.cssText = 'background:var(--dark); color:white; padding:10px 20px; border-radius:8px; margin-top:10px; position:fixed; bottom:20px; left:20px; z-index:2000; animation: fadeIn 0.3s;';
             t.innerText = m;
-            document.getElementById('toast-container').appendChild(t);
+            document.body.appendChild(t);
             setTimeout(() => t.remove(), 3000);
         };
 
