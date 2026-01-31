@@ -54,7 +54,7 @@
         ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-        /* --- Animations --- */
+        /* --- Animations General --- */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse-ring { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(255, 71, 87, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); } }
 
@@ -231,20 +231,8 @@
         
         .message { max-width: 75%; padding: 12px 18px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
-        .message.parent { 
-            align-self: flex-start; 
-            background: white; 
-            color: var(--secondary); 
-            border-bottom-right-radius: 4px; 
-        }
-        
-        .message.admin { 
-            align-self: flex-end; 
-            background: linear-gradient(135deg, var(--secondary) 0%, #4b5563 100%); 
-            color: white; 
-            border-bottom-left-radius: 4px; 
-        }
-        
+        .message.parent { align-self: flex-start; background: white; color: var(--secondary); border-bottom-right-radius: 4px; }
+        .message.admin { align-self: flex-end; background: linear-gradient(135deg, var(--secondary) 0%, #4b5563 100%); color: white; border-bottom-left-radius: 4px; }
         .message .sender-name { font-size: 0.7rem; opacity: 0.6; margin-bottom: 4px; display: block; font-weight: bold; }
         
         .chat-input-area { padding: 15px; background: white; display: flex; gap: 10px; border-top: 1px solid #f1f2f6; }
@@ -252,17 +240,19 @@
 
         /* --- PARENT VIEW (APP STYLE) --- */
         .parent-view-card {
-            text-align: center; background: white; border-radius: 30px; padding: 2.5rem 1.5rem;
+            text-align: center; border-radius: 30px; padding: 2.5rem 1.5rem;
             box-shadow: 0 20px 50px rgba(0,0,0,0.08); 
             margin-top: 2rem; border: 1px solid rgba(0,0,0,0.03);
+            /* Important for Animation Background */
+            position: relative; z-index: 10;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(5px);
         }
         
         .parent-timer-circle {
             width: 240px; height: 240px; background: white; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            margin: 30px auto; 
-            position: relative;
-            z-index: 1;
+            margin: 30px auto; position: relative; z-index: 1;
         }
         /* Ring Animation Layer */
         .parent-timer-circle::before {
@@ -286,7 +276,6 @@
         }
         
         #live-cost { color: var(--primary); font-weight: 800; font-size: 2.5rem; }
-
         .status-badge-in, .status-badge-paused { padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; }
 
         /* --- FINANCIAL REPORT --- */
@@ -322,19 +311,91 @@
         .finance-item { background: #f9f9f9; padding: 15px; border-radius: 12px; border: 1px solid #eee; }
         .finance-item .money { font-size: 1.2rem; font-weight: bold; color: var(--success); }
 
-        /* --- UTILS & STATUS --- */
+        /* --- UTILS --- */
         .hidden { display: none !important; }
         .section-title { font-size: 1.2rem; margin-bottom: 1.2rem; color: var(--secondary); position: relative; padding-right: 15px; border: none; }
         .section-title::before { content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 6px; height: 25px; background: var(--warning); border-radius: 10px; }
-        
-        /* Footer */
-        .developer-footer { margin-top: 3rem; text-align: center; padding: 2rem; border-top: 1px solid #eee; background: white; border-radius: 20px 20px 0 0; }
+        .developer-footer { margin-top: 3rem; text-align: center; padding: 2rem; border-top: 1px solid #eee; background: white; border-radius: 20px 20px 0 0; position: relative; z-index: 10; }
         .developer-footer a { color: var(--secondary); text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; padding: 8px 15px; background: #f0f2f5; border-radius: 20px; transition: 0.3s; }
         .developer-footer a:hover { background: var(--accent); color: white; }
         .heart-beat { display: inline-block; animation: heartbeat 1.5s infinite; color: var(--danger); }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
-        
         .test-link { font-size: 0.85rem; color: var(--accent); text-decoration: none; cursor: pointer; margin-top: 15px; display: block; font-weight: bold;}
+
+        /* --- 3D AMUSEMENT PARK BACKGROUND (Animation) --- */
+        .scene-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            overflow: hidden; z-index: 0; pointer-events: none;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
+        }
+
+        /* الغيوم المتحركة */
+        .cloud {
+            position: absolute; background: #fff; border-radius: 100px;
+            opacity: 0.8; animation: floatCloud linear infinite;
+            box-shadow: 0 8px 5px rgba(0,0,0,0.05);
+        }
+        .cloud::after, .cloud::before { content: ''; position: absolute; background: #fff; border-radius: 50%; }
+        .cloud-1 { width: 100px; height: 40px; top: 10%; left: -120px; animation-duration: 25s; }
+        .cloud-1::after { width: 40px; height: 40px; top: -20px; left: 15px; }
+        .cloud-1::before { width: 50px; height: 50px; top: -30px; left: 35px; }
+
+        .cloud-2 { width: 160px; height: 60px; top: 25%; left: -180px; animation-duration: 35s; animation-delay: 5s; transform: scale(0.8); opacity: 0.6; }
+        .cloud-2::after { width: 60px; height: 60px; top: -30px; left: 25px; }
+        .cloud-2::before { width: 70px; height: 70px; top: -45px; left: 55px; }
+
+        @keyframes floatCloud { 0% { left: -200px; } 100% { left: 120%; } }
+
+        /* العجلة الدوارة */
+        .ferris-wheel-container {
+            position: absolute; bottom: -50px; left: 50%; 
+            transform: translateX(-50%) scale(0.8);
+            width: 300px; height: 300px;
+            z-index: 1;
+        }
+        @media (min-width: 768px) { .ferris-wheel-container { bottom: 20px; transform: translateX(-50%) scale(1); } }
+
+        .wheel {
+            width: 300px; height: 300px; border: 4px solid #bdc3c7; border-radius: 50%;
+            position: relative; animation: wheelRotate 10s linear infinite;
+            box-shadow: 0 0 0 10px rgba(255,255,255,0.2);
+        }
+        .wheel::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 4px; background: #bdc3c7; }
+        .wheel::after { content: ''; position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #bdc3c7; }
+        .spoke-x { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #bdc3c7; transform: rotate(45deg); }
+        .spoke-y { position: absolute; top: 0; left: 50%; width: 4px; height: 100%; background: #bdc3c7; transform: rotate(-45deg); }
+
+        .cabin {
+            width: 40px; height: 50px; position: absolute;
+            transform-origin: top center;
+            animation: cabinRotate 10s linear infinite reverse;
+        }
+        .cabin-box {
+            width: 100%; height: 100%; border-radius: 10px 10px 5px 5px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 2px 2px 5px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .cabin-box::before { content: ''; position: absolute; top: -10px; left: 50%; width: 4px; height: 10px; background: #7f8c8d; transform: translateX(-50%); }
+
+        .cabin:nth-child(1) { top: -25px; left: 130px; } .cabin:nth-child(1) .cabin-box { background: #FF6B6B; }
+        .cabin:nth-child(2) { top: 35px; right: 35px; } .cabin:nth-child(2) .cabin-box { background: #4ECDC4; }
+        .cabin:nth-child(3) { bottom: 35px; right: 35px; } .cabin:nth-child(3) .cabin-box { background: #FFE66D; }
+        .cabin:nth-child(4) { bottom: -25px; left: 130px; } .cabin:nth-child(4) .cabin-box { background: #FF9F43; }
+        .cabin:nth-child(5) { bottom: 35px; left: 35px; } .cabin:nth-child(5) .cabin-box { background: #54A0FF; }
+        .cabin:nth-child(6) { top: 35px; left: 35px; } .cabin:nth-child(6) .cabin-box { background: #5F27CD; color:white; }
+
+        .stand {
+            position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 100px solid transparent;
+            border-right: 100px solid transparent;
+            border-bottom: 160px solid #95a5a6;
+            z-index: -1;
+        }
+        .stand::after { content: ''; position: absolute; top: 160px; left: -120px; width: 240px; height: 20px; background: #7f8c8d; border-radius: 10px; }
+
+        @keyframes wheelRotate { 100% { transform: rotate(360deg); } }
+        @keyframes cabinRotate { 100% { transform: rotate(-360deg); } }
 
         /* استجابة للهواتف الصغيرة */
         @media (max-width: 480px) {
@@ -466,7 +527,28 @@
             </div>
         </div>
 
-        <div id="parent-view" class="hidden">
+        <div id="parent-view" class="hidden" style="position: relative; min-height: 80vh;">
+            
+            <div class="scene-container">
+                <div class="cloud cloud-1"></div>
+                <div class="cloud cloud-2"></div>
+                
+                <div class="ferris-wheel-container">
+                    <div class="wheel">
+                        <div class="spoke-x"></div>
+                        <div class="spoke-y"></div>
+                        
+                        <div class="cabin"><div class="cabin-box"></div></div>
+                        <div class="cabin"><div class="cabin-box"></div></div>
+                        <div class="cabin"><div class="cabin-box"></div></div>
+                        <div class="cabin"><div class="cabin-box"></div></div>
+                        <div class="cabin"><div class="cabin-box"></div></div>
+                        <div class="cabin"><div class="cabin-box"></div></div>
+                    </div>
+                    <div class="stand"></div>
+                </div>
+            </div>
+
             <div class="parent-view-card">
                 <div class="status-badge-in" id="p-status-badge">متواجد حالياً</div>
                 
@@ -498,7 +580,7 @@
                 </div>
             </div>
             
-            <div id="session-ended-card" class="parent-view-card hidden" style="background:#fff; border:2px solid var(--danger);">
+            <div id="session-ended-card" class="parent-view-card hidden" style="background:#fff; border:2px solid var(--danger); position: relative; z-index: 10;">
                 <h2 style="color:var(--danger); margin-bottom:20px;">انتهت الجلسة</h2>
                 <p style="font-size:1.2rem; color:#666;">غادر الطفل منطقة اللعب.</p>
                 <h3 style="margin: 20px 0; font-size:2.5rem; color:var(--secondary);">
@@ -512,7 +594,7 @@
                 </div>
             </div>
 
-            <div class="developer-footer">
+            <div class="developer-footer" style="background:transparent;">
                 <p>برمجة وتطوير بكل حب <span class="heart-beat">❤️</span></p>
                 <p>المهندس محمد حماد</p>
                 <a href="tel:01279934735" class="phone-link"><i class="fas fa-phone"></i> 01279934735</a>
@@ -597,7 +679,7 @@
         const msgSound = document.getElementById('msg-sound');
         const hourSound = document.getElementById('hour-sound');
 
-        // Request Permission on Load (Or Triggered by Click)
+        // Request Permission
         function requestNotifyPermission() {
             if ("Notification" in window && Notification.permission !== "granted") {
                 Notification.requestPermission();
@@ -666,7 +748,7 @@
         window.handleEnter = handleEnter;
 
         window.checkLogin = () => {
-            requestNotifyPermission(); // طلب الإذن عند الدخول
+            requestNotifyPermission(); 
             const pass = document.getElementById('login-pass').value;
             if(pass === '0100') {
                 loginScreen.classList.add('hidden');
@@ -699,7 +781,7 @@
             loginScreen.classList.add('hidden');
             document.getElementById('admin-controls').style.display = 'none'; 
             document.getElementById('header-subtitle').innerText = "بوابة متابعة أولياء الأمور";
-            requestNotifyPermission(); // طلب الإذن لولي الأمر
+            requestNotifyPermission();
             initParentView(childIdParam);
         }
 
@@ -731,8 +813,6 @@
                         billableTime = Date.now() - child.entryTime - (child.totalPausedTime || 0);
                         const div = document.createElement('div');
                         div.className = 'kid-card in-status';
-                        
-                        // Search Attributes
                         div.setAttribute('data-name', child.name);
                         div.setAttribute('data-phone', child.phone);
                         div.setAttribute('data-id', child.childId || '');
@@ -740,27 +820,17 @@
                         // --- MESSAGE NOTIFICATION LOGIC (ADMIN) ---
                         const msgs = child.messages ? Object.values(child.messages) : [];
                         const msgCount = msgs.length;
-                        let unreadCount = 0;
-                        
-                        // Calculate unread based on simple diff logic (could be improved with read status)
                         const lastCount = lastMessageCounts[key] || 0;
                         
-                        // If new message arrived
                         if (msgCount > lastCount) {
                              const lastMsg = msgs[msgs.length - 1];
-                             // Only notify if Sender is PARENT
                              if (lastMsg.sender === 'parent') {
                                  playSound('msg');
                                  sendBrowserNotification(`رسالة جديدة من: ${child.name}`, lastMsg.text);
                                  showToast(`📩 رسالة من ${child.name}`);
                              }
                         }
-                        
                         lastMessageCounts[key] = msgCount;
-
-                        // Create Badge if chat is active/has messages (simplified for this demo as "Total count")
-                        // To make it truly "unread", we'd need a "read" flag in DB. 
-                        // For now, we show total count badge if > 0.
                         const badgeHtml = msgCount > 0 ? `<span class="notification-badge">${msgCount}</span>` : '';
 
                         div.innerHTML = `
@@ -823,7 +893,6 @@
                 filterAdminList();
             });
 
-            // --- ADMIN TIMER & HOUR ALERT ---
             if(adminTimerInterval) clearInterval(adminTimerInterval);
             adminTimerInterval = setInterval(() => {
                 document.querySelectorAll('.time-text').forEach(el => {
@@ -850,10 +919,7 @@
                 const name = document.getElementById('child-name').value;
                 const phone = document.getElementById('parent-phone').value;
                 const snack = document.getElementById('child-snack').value;
-                
-                // Generate 4-digit ID
                 const randomId = Math.floor(1000 + Math.random() * 9000).toString();
-
                 const newRef = push(ref(db, 'children'));
                 const link = `${window.location.origin}${window.location.pathname}?mode=parent&id=${newRef.key}`;
                 set(newRef, {
@@ -863,13 +929,11 @@
                     showToast(`تم تسجيل ${name} (رقم الطفل: ${randomId})`);
                     document.getElementById('child-name').value = '';
                     document.getElementById('parent-phone').value = '';
-                    
                     currentChildLink = link;
                     document.getElementById('new-child-qr').classList.remove('hidden');
                     document.getElementById('qr-parent-name').innerText = `${name} - رقم: ${randomId}`;
                     qrContainer.innerHTML = '';
                     new QRCode(qrContainer, { text: link, width:128, height: 128 });
-                    
                     document.getElementById('test-link-btn').href = link;
                     document.getElementById('wa-btn-new').onclick = () => sendToWhatsApp(phone, encodeURIComponent(link));
                 });
@@ -882,14 +946,12 @@
             document.getElementById('chat-modal-title').innerText = `محادثة مع والد/ة الطفل: ${name}`;
             document.getElementById('admin-chat-modal').style.display = 'flex';
             document.getElementById('admin-chat-input').focus();
-            
             const chatRef = ref(db, `children/${id}/messages`);
             onValue(chatRef, (snapshot) => {
                 const messages = snapshot.val();
                 const historyEl = document.getElementById('admin-chat-history');
                 historyEl.innerHTML = '';
                 if(!messages) return;
-                
                 Object.values(messages).sort((a,b) => a.timestamp - b.timestamp).forEach(msg => {
                     const div = document.createElement('div');
                     div.className = `message ${msg.sender}`;
@@ -910,12 +972,7 @@
             const input = document.getElementById('admin-chat-input');
             const text = input.value.trim();
             if(!text || !currentChatId) return;
-            
-            push(ref(db, `children/${currentChatId}/messages`), {
-                text: text,
-                sender: 'admin',
-                timestamp: Date.now()
-            });
+            push(ref(db, `children/${currentChatId}/messages`), { text: text, sender: 'admin', timestamp: Date.now() });
             input.value = '';
         };
 
@@ -934,10 +991,8 @@
                     logsContainer.innerHTML = '<div style="text-align:center;">لا توجد بيانات مالية مسجلة بعد.</div>';
                     return;
                 }
-
                 const records = {}; 
                 let grandTotal = 0;
-
                 Object.keys(data).forEach(key => {
                     const child = data[key];
                     if (child.status === 'out' && child.exitTime) {
@@ -946,34 +1001,22 @@
                         const dateKey = `${dateObj.getFullYear()}-${dateObj.getMonth()+1}-${dateObj.getDate()}`; 
                         const dateDisplay = dateObj.toLocaleDateString('ar-EG', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
                         const exitTime = dateObj.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
-
-                        if (!records[dateKey]) {
-                            records[dateKey] = { display: dateDisplay, total: 0, items: [] };
-                        }
-                        
-                        records[dateKey].items.push({ 
-                            name: child.name + ' (#'+(child.childId || '0000')+')', 
-                            cost: cost, 
-                            time: exitTime 
-                        });
+                        if (!records[dateKey]) { records[dateKey] = { display: dateDisplay, total: 0, items: [] }; }
+                        records[dateKey].items.push({ name: child.name + ' (#'+(child.childId || '0000')+')', cost: cost, time: exitTime });
                         records[dateKey].total += cost;
                         grandTotal += cost;
                     }
                 });
-
                 document.getElementById('grand-total-display').innerText = grandTotal.toFixed(1) + ' ج.م';
                 logsContainer.innerHTML = '';
-
                 if (Object.keys(records).length === 0) {
                     logsContainer.innerHTML = '<div style="text-align:center;">لا توجد سجلات خروج مكتملة.</div>';
                     return;
                 }
-
                 Object.keys(records).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
                     const dayData = records[date];
                     const dayHtml = document.createElement('div');
                     dayHtml.className = 'day-group';
-                    
                     let itemsHtml = '';
                     dayData.items.forEach(item => {
                         itemsHtml += `
@@ -983,26 +1026,15 @@
                                     <span class="record-time">وقت الخروج: ${item.time}</span>
                                 </div>
                                 <span class="record-cost">${item.cost.toFixed(1)} ج.م</span>
-                            </div>
-                        `;
+                            </div>`;
                     });
-
                     dayHtml.innerHTML = `
-                        <div class="day-header">
-                            <span>📅 ${dayData.display}</span>
-                            <span>سجل يومي</span>
-                        </div>
+                        <div class="day-header"><span>📅 ${dayData.display}</span><span>سجل يومي</span></div>
                         ${itemsHtml}
-                        <div class="day-total">
-                            <span>إجمالي اليوم</span>
-                            <span>${dayData.total.toFixed(1)} ج.م</span>
-                        </div>
-                    `;
+                        <div class="day-total"><span>إجمالي اليوم</span><span>${dayData.total.toFixed(1)} ج.م</span></div>`;
                     logsContainer.appendChild(dayHtml);
                 });
-            }).catch(err => {
-                logsContainer.innerHTML = '<div style="text-align:center; color:red;">حدث خطأ في تحميل البيانات.</div>';
-            });
+            }).catch(err => { logsContainer.innerHTML = '<div style="text-align:center; color:red;">حدث خطأ في تحميل البيانات.</div>'; });
         }
 
         // --- ACTIONS ---
@@ -1037,17 +1069,14 @@
         window.closeModal = () => document.getElementById('checkout-modal').style.display = 'none';
         window.closeQR = () => document.getElementById('new-child-qr').classList.add('hidden');
         window.copyLink = () => { navigator.clipboard.writeText(currentChildLink); showToast("تم النسخ"); };
-        window.sendToWhatsApp = (phone, link) => {
-            window.open(`https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('رابط متابعة طفلك: '+decodeURIComponent(link))}`, '_blank');
-        };
+        window.sendToWhatsApp = (phone, link) => { window.open(`https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('رابط متابعة طفلك: '+decodeURIComponent(link))}`, '_blank'); };
 
-        // --- FINANCIAL MODAL LOGIC (Summary for Admin) ---
+        // --- FINANCIAL MODAL ---
         window.openFinanceModal = () => {
             const now = new Date();
             const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
             const startWeek = startDay - (6*86400000);
             const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-            
             let d=0, w=0, m=0;
             Object.keys(allChildrenData).forEach(k => {
                 const c = allChildrenData[k];
@@ -1065,7 +1094,7 @@
         };
         window.closeFinanceModal = () => document.getElementById('finance-modal').style.display = 'none';
 
-        // --- PARENT LOGIC (Optimized with Chat Listener & Alerts) ---
+        // --- PARENT LOGIC ---
         function initParentView(id) {
             adminView.classList.add('hidden');
             financialView.classList.add('hidden');
@@ -1078,7 +1107,6 @@
                 const messages = snapshot.val();
                 const container = document.getElementById('parent-chat-messages');
                 container.innerHTML = '';
-                
                 let currentCount = 0;
                 let msgsArray = [];
                 if (messages) {
@@ -1092,27 +1120,21 @@
                         currentCount++;
                     });
                 }
-
-                // NOTIFICATION & SOUND (PARENT)
+                // NOTIFICATION (PARENT)
                 if (currentCount > prevMsgCount && currentCount > 0) {
                     const lastMsg = msgsArray[msgsArray.length - 1];
-                    // Only notify parent if message is from ADMIN
                     if (lastMsg.sender === 'admin') {
                         playSound('msg');
                         sendBrowserNotification("رسالة من الإدارة 💬", lastMsg.text);
                         showToast("📩 رسالة جديدة من الإدارة");
                     }
                 }
-                
-                // BADGE UPDATE (PARENT)
-                // For simplicity, showing total count as badge if chat has items
+                // BADGE
                 const badge = document.getElementById('parent-msg-badge');
                 if(currentCount > 0) {
                     badge.innerText = currentCount;
                     badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
-                }
+                } else { badge.classList.add('hidden'); }
 
                 prevMsgCount = currentCount;
                 container.scrollTop = container.scrollHeight;
@@ -1122,34 +1144,25 @@
             onValue(ref(db, `children/${id}`), s => {
                 const c = s.val();
                 if(!c) return;
-                
                 document.getElementById('p-child-id').innerText = '#' + (c.childId || '0000');
                 document.getElementById('p-child-name').innerText = c.name;
                 document.getElementById('p-child-snack').innerText = c.snack;
                 document.getElementById('entry-time-display').innerText = new Date(c.entryTime).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
-                
                 const badge = document.getElementById('p-status-badge');
                 const timer = document.getElementById('live-timer');
 
                 if(c.status === 'in') {
                     badge.className = 'status-badge-in'; badge.innerText = 'متواجد حالياً';
                     badge.style.background = 'var(--success)'; badge.style.color = '#005f33';
-                    
                     document.querySelector('.parent-view-card').style.display='block';
                     document.getElementById('session-ended-card').classList.add('hidden');
-                    
                     if(parentInterval) clearInterval(parentInterval);
-                    
                     let lastHour = 0;
-                    
                     const updateTimer = () => {
                         const t = Date.now() - c.entryTime - (c.totalPausedTime||0);
                         timer.innerText = formatDuration(t);
-                        
-                        // NEW BILLING
                         document.getElementById('live-cost').innerText = calculateFlatCost(t);
-                        
-                        // HOUR ALERT LOGIC (PARENT)
+                        // HOUR ALERT (PARENT)
                         const currentHour = Math.floor(t / 3600000);
                         if (currentHour > lastHour) {
                             playSound('hour');
@@ -1157,10 +1170,8 @@
                             lastHour = currentHour;
                         }
                     };
-                    
                     updateTimer(); 
                     parentInterval = setInterval(updateTimer, 1000);
-                    
                 } else if (c.status === 'paused') {
                     clearInterval(parentInterval);
                     badge.className = 'status-badge-paused'; badge.innerText = 'خروج مؤقت';
@@ -1184,14 +1195,7 @@
             document.getElementById('parent-message-input').value = '';
         };
 
-        // --- COST CALCULATION HELPER ---
-        function calculateFlatCost(ms) {
-            // 1 minute or 1 hour counts as 50 EGP
-            const hours = Math.ceil(ms / 3600000); 
-            return (hours * 50).toFixed(1);
-        }
-
-        // Utils
+        function calculateFlatCost(ms) { const hours = Math.ceil(ms / 3600000); return (hours * 50).toFixed(1); }
         function formatDuration(ms) {
             const s = Math.floor((ms/1000)%60), m = Math.floor((ms/60000)%60), h = Math.floor(ms/3600000);
             return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
@@ -1203,9 +1207,6 @@
             document.body.appendChild(t);
             setTimeout(() => t.remove(), 3000);
         };
-
     </script>
 </body>
 </html>
-
-```
