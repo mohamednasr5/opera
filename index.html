@@ -178,6 +178,8 @@
         .timer-paused { color: var(--warning); }
         .test-link { font-size: 0.8rem; color: var(--secondary); text-decoration: underline; cursor: pointer; margin-top: 10px; display: block;}
         .unread-badge { background: red; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: inline-flex; align-items: center; justify-content: center; position: absolute; top: -5px; right: -5px; }
+        .heart-beat { color: #ff4757; animation: heartbeat 1.5s infinite; display: inline-block; }
+        @keyframes heartbeat { 0% { transform: scale(1); } 14% { transform: scale(1.3); } 28% { transform: scale(1); } 42% { transform: scale(1.3); } 70% { transform: scale(1); } }
         
     </style>
 </head>
@@ -330,6 +332,19 @@
                     المبلغ النهائي: <span id="final-cost" style="color:var(--primary);">0</span> ج.م
                 </h3>
                 <p style="font-size:1.2rem; font-weight:bold;">شكراً لزيارتكم! 🎈</p>
+                
+                <!-- ADDED MARKETING & DEV INFO -->
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed #ccc;">
+                    <h4 style="color: var(--dark); margin-bottom: 5px; font-weight: normal;">في كافيه ومطعم أوبرا عاشور</h4>
+                    <p style="color: var(--primary); font-size: 1.1rem; font-style: italic; font-weight: bold;">..من هنا تبدأ الحكاية</p>
+                    
+                    <div style="margin-top: 25px; font-size: 0.9rem; color: #555;">
+                        <p style="margin-bottom: 5px;">برمجة وتطوير بكل حب <span class="heart-beat">❤️</span></p>
+                        <p>المهندس محمد حماد 
+                           <a href="https://www.facebook.com/en.mohamed.nasr" target="_blank" style="color: #3b5998; text-decoration: none; font-weight: bold;">(حساب فيسبوك)</a>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -389,9 +404,7 @@
     <div id="toast-container" style="position:fixed; bottom:20px; left:20px; z-index:2000;"></div>
 
     <!-- HIDDEN AUDIO ELEMENTS -->
-    <!-- Message Sound -->
     <audio id="msg-sound" src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_3f32527b79.mp3"></audio>
-    <!-- Hour Chime Sound -->
     <audio id="hour-sound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3"></audio>
 
     <!-- Firebase SDKs -->
@@ -435,7 +448,7 @@
         let currentChatId = null; 
         let lastMessageCounts = {}; 
         let adminLastHourCounts = {};
-        let searchQuery = ""; // For Admin Search
+        let searchQuery = "";
         
         // DOM Elements
         const adminView = document.getElementById('admin-view');
@@ -450,10 +463,6 @@
         // --- SEARCH LISTENER ---
         searchInput.addEventListener('input', (e) => {
             searchQuery = e.target.value.toLowerCase();
-            // Trigger a re-render logic if needed, or simply rely on the next onValue
-            // Since onValue isn't triggered by local search, we might need to manually trigger filter
-            // But since list is re-rendered on DB change, we just filter the existing DOM or call render function.
-            // Best approach here: Filter the DOM elements directly for immediate feedback without data fetch
             filterAdminList();
         });
 
@@ -540,7 +549,6 @@
                         const div = document.createElement('div');
                         div.className = 'kid-card in-status';
                         
-                        // Search Attributes
                         div.setAttribute('data-name', child.name);
                         div.setAttribute('data-phone', child.phone);
                         div.setAttribute('data-id', child.childId || '');
@@ -574,7 +582,6 @@
                         billableTime = child.pauseStartTime - child.entryTime - (child.totalPausedTime || 0);
                         const div = document.createElement('div');
                         div.className = 'kid-card paused-status';
-                        // Search Attributes
                         div.setAttribute('data-name', child.name);
                         div.setAttribute('data-phone', child.phone);
                         div.setAttribute('data-id', child.childId || '');
@@ -609,7 +616,6 @@
                     }
                 });
                 
-                // Apply filter immediately after render
                 filterAdminList();
             });
 
@@ -620,7 +626,6 @@
                     el.setAttribute('data-billable', t);
                     el.innerText = formatDuration(t);
 
-                    // Hour Alert
                     const currentHour = Math.floor(t / 3600000); 
                     const lastHour = parseInt(el.getAttribute('data-last-hour'));
                     
@@ -636,15 +641,13 @@
                 const name = document.getElementById('child-name').value;
                 const phone = document.getElementById('parent-phone').value;
                 const snack = document.getElementById('child-snack').value;
-                
-                // Generate 4-digit ID
                 const randomId = Math.floor(1000 + Math.random() * 9000).toString();
-
+                
                 const newRef = push(ref(db, 'children'));
                 const link = `${window.location.origin}${window.location.pathname}?mode=parent&id=${newRef.key}`;
                 set(newRef, {
                     name, phone, snack, entryTime: Date.now(), status:'in', messages:[], totalPausedTime:0,
-                    childId: randomId // SAVE THE ID
+                    childId: randomId 
                 }).then(() => {
                     showToast(`تم تسجيل ${name} (رقم الطفل: ${randomId})`);
                     document.getElementById('child-name').value = '';
@@ -827,7 +830,7 @@
             window.open(`https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('رابط متابعة طفلك: '+decodeURIComponent(link))}`, '_blank');
         };
 
-        // --- FINANCIAL MODAL LOGIC (Summary for Admin) ---
+        // --- FINANCIAL MODAL LOGIC ---
         window.openFinanceModal = () => {
             const now = new Date();
             const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -851,7 +854,7 @@
         };
         window.closeFinanceModal = () => document.getElementById('finance-modal').style.display = 'none';
 
-        // --- PARENT LOGIC (Optimized with Chat Listener & Alerts) ---
+        // --- PARENT LOGIC ---
         function initParentView(id) {
             adminView.classList.add('hidden');
             financialView.classList.add('hidden');
@@ -859,7 +862,6 @@
             
             let prevMsgCount = 0;
             
-            // 1. Chat Listener
             onValue(ref(db, `children/${id}/messages`), (snapshot) => {
                 const messages = snapshot.val();
                 const container = document.getElementById('parent-chat-messages');
@@ -884,12 +886,10 @@
                 container.scrollTop = container.scrollHeight;
             });
 
-            // 2. Main Data Listener
             onValue(ref(db, `children/${id}`), s => {
                 const c = s.val();
                 if(!c) return;
                 
-                // Display Child ID
                 document.getElementById('p-child-id').innerText = '#' + (c.childId || '0000');
                 document.getElementById('p-child-name').innerText = c.name;
                 document.getElementById('p-child-snack').innerText = c.snack;
