@@ -245,7 +245,7 @@
             margin-top: 2rem; border: 1px solid rgba(0,0,0,0.03);
             /* Important for Animation Background */
             position: relative; z-index: 10;
-            background: rgba(255, 255, 255, 0.95) !important;
+            background: rgba(255, 255, 255, 0.95) !important; 
             backdrop-filter: blur(5px);
         }
         
@@ -478,13 +478,16 @@
                             <label>رقم هاتف الوالد</label>
                             <input type="tel" id="parent-phone" class="form-control" placeholder="مثال: 201xxxxxxxxx" required>
                         </div>
+                        
                         <div class="form-group">
-                            <label>المشروب / الوجبة</label>
-                            <select id="child-snack" class="form-control">
-                                <option value="غزل بنات">1 غزل بنات 🍭</option>
-                                <option value="فشار">1 فشار 🍿</option>
-                            </select>
+                            <label>إضافة منتج (اختياري)</label>
+                            <input type="text" id="extra-item" class="form-control" placeholder="اسم المنتج (مثلاً: فشار)">
                         </div>
+                        <div class="form-group">
+                            <label>سعر المنتج (اختياري)</label>
+                            <input type="number" id="extra-price" class="form-control" placeholder="السعر بالجنيه">
+                        </div>
+
                         <button type="submit" class="btn btn-primary">تسجيل دخول</button>
                     </form>
 
@@ -593,7 +596,9 @@
                     <div class="parent-view-card">
                         <div class="status-badge-in" id="p-status-badge">متواجد حالياً</div>
                         <h2 id="p-child-name" style="font-size:2rem; margin:15px 0 5px; color:var(--secondary);">اسم الطفل</h2>
-                        <p id="p-child-snack" style="color: #888; font-size:1.1rem; margin-bottom:15px;">الوجبة المختارة</p>
+                        
+                        <p id="p-child-snack" style="color: #888; font-size:1.1rem; margin-bottom:15px;"></p>
+                        
                         <div id="p-child-id" class="child-number-display">#0000</div>
                         <div class="parent-timer-circle">
                             <div class="timer-text-big" id="live-timer">00:00:00</div>
@@ -681,8 +686,10 @@
         <div class="modal-content">
             <h2 style="color:var(--danger);">إنهاء جلسة</h2>
             <p>المدة: <span id="modal-duration" style="font-weight:bold; font-family:monospace;"></span></p>
+            
             <div style="font-size:2.5rem; font-weight:800; color:var(--secondary); margin:15px 0;" id="modal-price">0 ج.م</div>
-            <p style="font-size:0.8rem; color:#666; margin-bottom:1.5rem;">(20 ج.م لكل ساعة كاملة)</p>
+            
+            <p style="font-size:0.8rem; color:#666; margin-bottom:1.5rem;">(20 ج.م لكل ساعة كاملة + الإضافات)</p>
             <div style="display:flex; gap:10px; justify-content:center;">
                 <button class="btn btn-danger" onclick="confirmCheckout()">تأكيد</button>
                 <button class="btn btn-outline" onclick="closeModal()">إلغاء</button>
@@ -850,6 +857,12 @@
                     const child = data[key];
                     const link = `${window.location.origin}${window.location.pathname}?mode=parent&id=${key}`;
                     let billableTime = 0;
+                    
+                    // تحضير نص المنتج الإضافي للعرض
+                    let productText = '';
+                    if(child.productName) {
+                        productText = `<span class="kid-tag" style="background:#e1f5fe; color:#0288d1;">🛒 ${child.productName} (${child.productPrice || 0} ج.م)</span>`;
+                    }
 
                     if (child.status === 'in') {
                         billableTime = Date.now() - child.entryTime - (child.totalPausedTime || 0);
@@ -880,7 +893,7 @@
                                 <h3>${child.name} <span class="kid-id-badge">#${child.childId || '0000'}</span></h3>
                                 <div class="kid-meta">
                                     <span class="kid-tag">📱 ${child.phone}</span>
-                                    <span class="kid-tag">🍽️ ${child.snack}</span>
+                                    ${productText}
                                 </div>
                                 <div class="timer-display">⏰ <span class="time-text" data-name="${child.name}" data-billable="${billableTime}" data-last-hour="0">${formatDuration(billableTime)}</span></div>
                             </div>
@@ -905,7 +918,7 @@
                         div.innerHTML = `
                             <div class="kid-info">
                                 <h3>${child.name} <span class="kid-id-badge">#${child.childId || '0000'}</span></h3>
-                                <div class="kid-meta"><span class="status-badge-paused">خروج مؤقت</span></div>
+                                <div class="kid-meta"><span class="status-badge-paused">خروج مؤقت</span> ${productText}</div>
                                 <div class="timer-display timer-paused">⏰ ${formatDuration(billableTime)}</div>
                             </div>
                             <div class="controls">
@@ -924,6 +937,7 @@
                                 <div class="kid-meta">
                                     <span class="kid-tag">⏳ ${formatDuration(diff)}</span>
                                     <span class="kid-tag">📅 ${new Date(child.exitTime).toLocaleDateString('ar-EG')}</span>
+                                    ${productText}
                                 </div>
                                 <div class="price-tag" style="font-weight:bold; color:var(--primary);">💰 ${child.totalCost} ج.م</div>
                             </div>
@@ -960,17 +974,29 @@
                 e.preventDefault();
                 const name = document.getElementById('child-name').value;
                 const phone = document.getElementById('parent-phone').value;
-                const snack = document.getElementById('child-snack').value;
+                
+                // --- تعديل: قراءة الحقول الجديدة ---
+                const productName = document.getElementById('extra-item').value;
+                const productPrice = parseFloat(document.getElementById('extra-price').value) || 0;
+
                 const randomId = Math.floor(1000 + Math.random() * 9000).toString();
                 const newRef = push(ref(db, 'children'));
                 const link = `${window.location.origin}${window.location.pathname}?mode=parent&id=${newRef.key}`;
+                
+                // حفظ البيانات مع المنتج والسعر
                 set(newRef, {
-                    name, phone, snack, entryTime: Date.now(), status:'in', messages:[], totalPausedTime:0,
+                    name, phone, 
+                    productName: productName, // اسم المنتج
+                    productPrice: productPrice, // سعر المنتج
+                    entryTime: Date.now(), status:'in', messages:[], totalPausedTime:0,
                     childId: randomId
                 }).then(() => {
                     showToast(`تم تسجيل ${name} (رقم الطفل: ${randomId})`);
                     document.getElementById('child-name').value = '';
                     document.getElementById('parent-phone').value = '';
+                    document.getElementById('extra-item').value = '';
+                    document.getElementById('extra-price').value = '';
+                    
                     currentChildLink = link;
                     document.getElementById('new-child-qr').classList.remove('hidden');
                     document.getElementById('qr-parent-name').innerText = `${name} - رقم: ${randomId}`;
@@ -1088,26 +1114,40 @@
                 update(ref(db, `children/${id}`), { status:'in', totalPausedTime: (d.totalPausedTime||0) + pauseDur });
             });
         };
+        
         window.prepareCheckout = (id) => {
             currentChildId = id;
             get(ref(db, `children/${id}`)).then(s => {
                 const c = s.val();
                 let bill = c.status === 'paused' ? c.pauseStartTime - c.entryTime - (c.totalPausedTime||0) : Date.now() - c.entryTime - (c.totalPausedTime||0);
-                const cost = calculateFlatCost(bill);
+                
+                // --- تعديل: حساب التكلفة (وقت + منتج) ---
+                const timeCost = calculateTimeCost(bill);
+                const extra = c.productPrice || 0;
+                const total = (parseFloat(timeCost) + parseFloat(extra)).toFixed(1);
+
                 document.getElementById('modal-duration').innerText = formatDuration(bill);
-                document.getElementById('modal-price').innerText = cost + ' ج.م';
+                document.getElementById('modal-price').innerHTML = total + ' ج.م <br><span style="font-size:1rem; color:#666; font-weight:normal;">(وقت: '+timeCost+' + منتجات: '+extra+')</span>';
                 document.getElementById('checkout-modal').style.display = 'flex';
             });
         };
+
         window.confirmCheckout = () => {
             get(ref(db, `children/${currentChildId}`)).then(s => {
                 const c = s.val();
                 let bill = c.status === 'paused' ? c.pauseStartTime - c.entryTime - (c.totalPausedTime||0) : Date.now() - c.entryTime - (c.totalPausedTime||0);
-                update(ref(db, `children/${currentChildId}`), { status:'out', exitTime: Date.now(), totalCost: calculateFlatCost(bill) });
+                
+                // --- تعديل: الحساب النهائي وحفظه ---
+                const timeCost = calculateTimeCost(bill);
+                const extra = c.productPrice || 0;
+                const total = (parseFloat(timeCost) + parseFloat(extra)).toFixed(1);
+
+                update(ref(db, `children/${currentChildId}`), { status:'out', exitTime: Date.now(), totalCost: total });
                 closeModal();
                 showToast("تم تسجيل الخروج");
             });
         };
+
         window.closeModal = () => document.getElementById('checkout-modal').style.display = 'none';
         window.closeQR = () => document.getElementById('new-child-qr').classList.add('hidden');
         window.copyLink = () => { navigator.clipboard.writeText(currentChildLink); showToast("تم النسخ"); };
@@ -1188,7 +1228,14 @@
                 if(!c) return;
                 document.getElementById('p-child-id').innerText = '#' + (c.childId || '0000');
                 document.getElementById('p-child-name').innerText = c.name;
-                document.getElementById('p-child-snack').innerText = c.snack;
+                
+                // --- تعديل: عرض المنتج والسعر للأب ---
+                let snackText = "لا توجد طلبات إضافية";
+                if(c.productName) {
+                    snackText = `🛒 ${c.productName} (${c.productPrice} ج.م)`;
+                }
+                document.getElementById('p-child-snack').innerText = snackText;
+
                 document.getElementById('entry-time-display').innerText = new Date(c.entryTime).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
                 const badge = document.getElementById('p-status-badge');
                 const timer = document.getElementById('live-timer');
@@ -1203,7 +1250,13 @@
                     const updateTimer = () => {
                         const t = Date.now() - c.entryTime - (c.totalPausedTime||0);
                         timer.innerText = formatDuration(t);
-                        document.getElementById('live-cost').innerText = calculateFlatCost(t);
+                        
+                        // --- تعديل: تحديث السعر اللحظي (وقت + منتج) ---
+                        const timeCost = calculateTimeCost(t);
+                        const extra = c.productPrice || 0;
+                        const totalLive = (parseFloat(timeCost) + parseFloat(extra)).toFixed(1);
+                        document.getElementById('live-cost').innerText = totalLive;
+
                         // HOUR ALERT (PARENT)
                         const currentHour = Math.floor(t / 3600000);
                         if (currentHour > lastHour) {
@@ -1229,7 +1282,7 @@
                 }
             });
         }
-        
+
         window.sendParentMessage = () => {
             const t = document.getElementById('parent-message-input').value;
             if(!t) return;
@@ -1238,9 +1291,10 @@
         };
 
         // --- NEW PRICING LOGIC (20 EGP/Hour) ---
-        function calculateFlatCost(ms) { 
+        // دالة تحسب سعر الوقت فقط
+        function calculateTimeCost(ms) { 
             const hours = Math.ceil(ms / 3600000); 
-            return (hours * 20).toFixed(1); 
+            return (hours * 20); 
         }
 
         function formatDuration(ms) {
