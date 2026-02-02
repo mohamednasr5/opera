@@ -1,4 +1,4 @@
-//<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -923,4 +923,226 @@
                         const dateDisplay = dateObj.toLocaleDateString('ar-EG', { weekday:'long', day:'numeric', month:'long' });
                         const exitTime = dateObj.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
                         if (!records[dateKey]) { records[dateKey] = { display: dateDisplay, total: 0, items: [] }; }
-                        records
+                        records[dateKey].items.push({ name: child.name, cost: cost, time: exitTime });
+                        records[dateKey].total += cost;
+                        grandTotal += cost;
+                    }
+                });
+                document.getElementById('grand-total-display').innerText = grandTotal.toFixed(1) + ' ج.م';
+                logsContainer.innerHTML = '';
+                
+                Object.keys(records).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
+                    const dayData = records[date];
+                    const dayHtml = document.createElement('div');
+                    dayHtml.className = 'card';
+                    let itemsHtml = '';
+                    dayData.items.forEach(item => {
+                        itemsHtml += `
+                            <div style="padding: 10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                                <div>
+                                    <span style="font-weight:bold;">${item.name}</span>
+                                    <span style="font-size:0.8rem; color:#999; display:block;">${item.time}</span>
+                                </div>
+                                <span style="font-weight:bold; color:#00b894;">${item.cost} ج.م</span>
+                            </div>`;
+                    });
+                    dayHtml.innerHTML = `
+                        <div style="background:#f1f2f6; padding:10px; border-radius:5px; margin-bottom:10px; font-weight:bold;">📅 ${dayData.display}</div>
+                        ${itemsHtml}
+                        <div style="text-align:right; padding-top:10px; font-weight:bold;">إجمالي اليوم: ${dayData.total.toFixed(1)} ج.م</div>`;
+                    logsContainer.appendChild(dayHtml);
+                });
+            });
+        }
+
+        window.pauseChild = (id) => update(ref(db, `children/${id}`), { status:'paused', pauseStartTime: Date.now() });
+        window.resumeChild = (id) => {
+            get(ref(db, `children/${id}`)).then(snap => {
+                const d = snap.val();
+                const pauseDur = Date.now() - d.pauseStartTime;
+                update(ref(db, `children/${id}`), { status:'in', totalPausedTime: (d.totalPausedTime||0) + pauseDur });
+            });
+        };
+        
+        window.prepareCheckout = (id) => {
+            currentChildId = id;
+            get(ref(db, `children/${id}`)).then(s => {
+                const c = s.val();
+                let bill = c.status === 'paused' ? c.pauseStartTime - c.entryTime - (c.totalPausedTime||0) : Date.now() - c.entryTime - (c.totalPausedTime||0);
+                
+                const timeCost = calculateTimeCost(bill);
+                const extra = c.productPrice || 0;
+                const total = (parseFloat(timeCost) + parseFloat(extra)).toFixed(1);
+
+                document.getElementById('modal-duration').innerText = formatDuration(bill);
+                document.getElementById('modal-price').innerHTML = total + ' ج.م';
+                document.getElementById('checkout-modal').style.display = 'flex';
+            });
+        };
+
+        window.confirmCheckout = () => {
+            get(ref(db, `children/${currentChildId}`)).then(s => {
+                const c = s.val();
+                let bill = c.status === 'paused' ? c.pauseStartTime - c.entryTime - (c.totalPausedTime||0) : Date.now() - c.entryTime - (c.totalPausedTime||0);
+                
+                const timeCost = calculateTimeCost(bill);
+                const extra = c.productPrice || 0;
+                const total = (parseFloat(timeCost) + parseFloat(extra)).toFixed(1);
+
+                update(ref(db, `children/${currentChildId}`), { status:'out', exitTime: Date.now(), totalCost: total });
+                closeModal();
+                showToast("تم تسجيل الخروج");
+            });
+        };
+
+        window.closeModal = () => document.getElementById('checkout-modal').style.display = 'none';
+        window.closeQR = () => document.getElementById('new-child-qr').classList.add('hidden');
+        window.copyLink = () => { navigator.clipboard.writeText(currentChildLink); showToast("تم النسخ"); };
+        window.sendToWhatsApp = (phone, link) => { window.open(`https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent('رابط متابعة طفلك: '+decodeURIComponent(link))}`, '_blank'); };
+
+        window.openFinanceModal = () => {
+            const now = new Date();
+            const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const startWeek = startDay - (6*86400000);
+            const startMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+            let d=0, w=0, m=0;
+            Object.keys(allChildrenData).forEach(k => {
+                const c = allChildrenData[k];
+                if(c.status==='out' && c.exitTime) {
+                    const cost = parseFloat(c.totalCost);
+                    if(c.exitTime >= startDay) d += cost;
+                    if(c.exitTime >= startWeek) w += cost;
+                    if(c.exitTime >= startMonth) m += cost;
+                }
+            });
+            document.getElementById('stat-today').innerText = d.toFixed(1);
+            document.getElementById('stat-week').innerText = w.toFixed(1);
+            document.getElementById('stat-month').innerText = m.toFixed(1);
+            document.getElementById('finance-modal').style.display = 'flex';
+        };
+        window.closeFinanceModal = () => document.getElementById('finance-modal').style.display = 'none';
+
+        function initParentView(id) {
+            adminView.classList.add('hidden');
+            financialView.classList.add('hidden');
+            parentView.classList.remove('hidden');
+            
+            let prevMsgCount = 0;
+            
+            onValue(ref(db, `children/${id}/messages`), (snapshot) => {
+                const messages = snapshot.val();
+                const container = document.getElementById('parent-chat-messages');
+                container.innerHTML = '';
+                let currentCount = 0;
+                let msgsArray = [];
+                if (messages) {
+                    msgsArray = Object.values(messages).sort((a,b) => a.timestamp - b.timestamp);
+                    msgsArray.forEach(msg => {
+                        const div = document.createElement('div');
+                        div.className = `message ${msg.sender === 'admin' ? 'admin' : 'parent'}`;
+                        const senderName = msg.sender === 'admin' ? 'الإدارة' : 'أنت';
+                        div.innerHTML = `<span style="font-size:0.7rem; opacity:0.6; display:block;">${senderName}</span>${msg.text}`;
+                        container.appendChild(div);
+                        currentCount++;
+                    });
+                }
+                if (currentCount > prevMsgCount && currentCount > 0) {
+                    const lastMsg = msgsArray[msgsArray.length - 1];
+                    if (lastMsg.sender === 'admin') {
+                        playSound('msg');
+                        sendBrowserNotification("رسالة من الإدارة 💬", lastMsg.text);
+                        showToast("📩 رسالة جديدة من الإدارة");
+                    }
+                }
+                const badge = document.getElementById('parent-msg-badge');
+                if(currentCount > 0) {
+                    badge.innerText = currentCount;
+                    badge.classList.remove('hidden');
+                } else { badge.classList.add('hidden'); }
+
+                prevMsgCount = currentCount;
+                container.scrollTop = container.scrollHeight;
+            });
+
+            onValue(ref(db, `children/${id}`), s => {
+                const c = s.val();
+                if(!c) return;
+                document.getElementById('p-child-id').innerText = '#' + (c.childId || '00');
+                document.getElementById('p-child-name').innerText = c.name;
+                
+                let snackText = "لا توجد طلبات إضافية";
+                if(c.productName) {
+                    snackText = `🛒 ${c.productName} (${c.productPrice} ج.م)`;
+                }
+                document.getElementById('p-child-snack').innerText = snackText;
+
+                document.getElementById('entry-time-display').innerText = new Date(c.entryTime).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+                const badge = document.getElementById('p-status-badge');
+                const timer = document.getElementById('live-timer');
+
+                if(c.status === 'in') {
+                    badge.innerText = 'متواجد حالياً';
+                    badge.style.background = '#00b894';
+                    document.querySelector('.parent-view-card').style.display='block';
+                    document.getElementById('session-ended-card').classList.add('hidden');
+                    if(parentInterval) clearInterval(parentInterval);
+                    let lastHour = 0;
+                    const updateTimer = () => {
+                        const t = Date.now() - c.entryTime - (c.totalPausedTime||0);
+                        timer.innerText = formatDuration(t);
+                        
+                        const timeCost = calculateTimeCost(t);
+                        const extra = c.productPrice || 0;
+                        const totalLive = (parseFloat(timeCost) + parseFloat(extra)).toFixed(1);
+                        document.getElementById('live-cost').innerText = totalLive;
+
+                        const currentHour = Math.floor(t / 3600000);
+                        if (currentHour > lastHour) {
+                            playSound('hour');
+                            sendBrowserNotification("تنبيه الوقت ⏰", "لقد أتم طفلك ساعة إضافية من اللعب.");
+                            lastHour = currentHour;
+                        }
+                    };
+                    updateTimer(); 
+                    parentInterval = setInterval(updateTimer, 1000);
+                } else if (c.status === 'paused') {
+                    clearInterval(parentInterval);
+                    badge.innerText = 'خروج مؤقت';
+                    badge.style.background = '#fdcb6e';
+                    const pausedT = c.pauseStartTime - c.entryTime - (c.totalPausedTime||0);
+                    timer.innerText = formatDuration(pausedT);
+                } else if (c.status === 'out') {
+                    clearInterval(parentInterval);
+                    document.querySelector('.parent-view-card').style.display='none';
+                    document.getElementById('session-ended-card').classList.remove('hidden');
+                    document.getElementById('final-cost').innerText = c.totalCost;
+                }
+            });
+        }
+
+        window.sendParentMessage = () => {
+            const t = document.getElementById('parent-message-input').value;
+            if(!t) return;
+            push(ref(db, `children/${childIdParam}/messages`), { text:t, sender:'parent', timestamp:Date.now() });
+            document.getElementById('parent-message-input').value = '';
+        };
+
+        function calculateTimeCost(ms) { 
+            const hours = Math.ceil(ms / 3600000); 
+            return (hours * 20); 
+        }
+
+        function formatDuration(ms) {
+            const s = Math.floor((ms/1000)%60), m = Math.floor((ms/60000)%60), h = Math.floor(ms/3600000);
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
+        window.showToast = (m) => {
+            const t = document.createElement('div'); 
+            t.style.cssText = 'background:#2d3436; color:white; padding:12px 24px; border-radius:30px; margin-top:10px; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:2000; animation: popIn 0.3s; font-weight:bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2);';
+            t.innerText = m;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        };
+    </script>
+</body>
+</html>
